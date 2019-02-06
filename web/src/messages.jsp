@@ -44,63 +44,69 @@
                     && request.getParameter("messageid") != null) {
                 EntityManagerFactory emf2 = Persistence.createEntityManagerFactory("WebMessagesPU");
                 WebmessagesJpaController wjc2 = new WebmessagesJpaController(emf2);
+                System.out.println("MESSAGE_ID=" + Integer.parseInt(request.getParameter("messageid")));
                 wjc2.destroy(Integer.parseInt(request.getParameter("messageid")));
+                messages = wjc2.fetchMessagesFromUser(((Webuser) session.getAttribute("userObject")).getUserid());
             }
         %>
-        <form action="messages.jsp" method="post">
-            <input type="hidden" name="check" value="table">
-            <table>
-                <tr>
-                    <th>FROM</th>
-                    <th>MESSAGE</th>
-                    <th>DATE</th>
-                    <th></th>
-                </tr>
 
-                <%
-                    for (Webmessages message : messages) {
-                %>
-                <tr>
-                    <td><%=message.getFromuserid().getLname()%></td>
-                    <td><%=message.getMessage()%></td>
-                    <td><%=message.getDoc()%></td>
+        
+        <table>
+            <tr>
+                <th>FROM</th>
+                <th>MESSAGE</th>
+                <th>DATE</th>
+                <th></th>
+            </tr>
+
+            <%
+                for (Webmessages message : messages) {
+            %>
+            <tr>
+                <td><%=message.getFromuserid().getLname()%></td>
+                <td><%=message.getMessage()%></td>
+                <td><%=message.getDoc()%></td>
+            <form id="myform" action="messages.jsp" method="post">    
+                <input type="hidden" name="check" value="table">
                 <input type="hidden" name="messageid" value="<%=message.getMsgid()%>" >
-                <td><input type="submit" value="Delete"></td>
-                </tr>
-                <%
-                    }
-
-                    emf.close();
-                %>
-            </table>
-        </form>
-        <hr>
-        <h4>New Message</h4>
+                <td><input type="button" value="Delete" onclick="if(confirm('Are you sure to delete:\n <%=message.getMessage() %>?')) document.getElementById('myform').submit();" ></td>
+                
+            </form>
+        </tr>
         <%
-            if (request.getMethod().equals("POST")
-                    && request.getParameter("check").equals("usermessage")) {
-                EntityManagerFactory emf1 = Persistence.createEntityManagerFactory("WebMessagesPU");
-                WebmessagesJpaController wjc1 = new WebmessagesJpaController(emf1);
-                WebuserJpaController userController = new WebuserJpaController(emf1);
-                Webuser touser = userController.findWebuserByUsername(request.getParameter("user"));
-                Webmessages message = new Webmessages((Webuser) session.getAttribute("userObject"),
-                        touser,
-                        request.getParameter("msg"));
-                wjc1.create(message);
-                out.print("<h4>Message successfully sent</h4>");
-                emf1.close();
             }
+
+            emf.close();
         %>
+    </table>
 
-        <form action="messages.jsp" method="post">
-            <input type="hidden" name="check" value="usermessage">
-            <input type="text" name="user" placeholder="Enter the user to send your message"><br>
-            <textarea rows="5" cols="30" name="msg" placeholder="Enter your message"></textarea><br>
-            <input type="submit" value="Send">
-            <input type="reset" value="Clear">
-        </form>
+    <hr>
+    <h4>New Message</h4>
+    <%
+        if (request.getMethod().equals("POST")
+                && request.getParameter("check").equals("usermessage")) {
+            EntityManagerFactory emf1 = Persistence.createEntityManagerFactory("WebMessagesPU");
+            WebmessagesJpaController wjc1 = new WebmessagesJpaController(emf1);
+            WebuserJpaController userController = new WebuserJpaController(emf1);
+            Webuser touser = userController.findWebuserByUsername(request.getParameter("user"));
+            Webmessages message = new Webmessages((Webuser) session.getAttribute("userObject"),
+                    touser,
+                    request.getParameter("msg"));
+            wjc1.create(message);
+            out.print("<h4>Message successfully sent</h4>");
+            emf1.close();
+        }
+    %>
 
-        <hr>
-        <h4>Copyright My Name 2019</h4>
-    </body>
+    <form action="messages.jsp" method="post">
+        <input type="hidden" name="check" value="usermessage">
+        <input type="text" name="user" placeholder="Enter the user to send your message"><br>
+        <textarea rows="5" cols="30" name="msg" placeholder="Enter your message"></textarea><br>
+        <input type="submit" value="Send">
+        <input type="reset" value="Clear">
+    </form>
+
+    <hr>
+    <h4>Copyright My Name 2019</h4>
+</body>
 </html>
